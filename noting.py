@@ -143,15 +143,37 @@
 # print(res)
 
 
-def filter(content):
-    names = ['原告经营情况','企业名称变更','注册商标权利情况','证明商标使用管理规则','商标许可/转让情况','商标共有情况','商标知名度','驰名商标','申请驰名商标司法认定','证据保全公证','著作权登记','著作权归属','被告经营情况','行为人商标使用情况','与域名相关的事实','贴牌加工行为','合法来源','未实际使用','商标行政程序','商标权行政诉讼','商标权行政处罚','商标权犯罪']
-    names.extend(['合理开支','产品利润','违法收入','原产地域名称情况'])
-    regex = ""
-    for name in names:
-        regex+="</{0,1}"+name+">|"
-    regex = regex[:-1]
-    print(regex)
+# def filter(content):
+#     names = ['原告经营情况','企业名称变更','注册商标权利情况','证明商标使用管理规则','商标许可/转让情况','商标共有情况','商标知名度','驰名商标','申请驰名商标司法认定','证据保全公证','著作权登记','著作权归属','被告经营情况','行为人商标使用情况','与域名相关的事实','贴牌加工行为','合法来源','未实际使用','商标行政程序','商标权行政诉讼','商标权行政处罚','商标权犯罪']
+#     names.extend(['合理开支','产品利润','违法收入','原产地域名称情况'])
+#     regex = ""
+#     for name in names:
+#         regex+="</{0,1}"+name+">|"
+#     regex = regex[:-1]
+#     print(regex)
+#
+# filter("dd")
+#
+#
 
-filter("dd")
 
+for i in range(1,10):
+    print(i)
 
+def twoSum(nums, target):
+    """
+    :type nums: List[int]
+    :type target: int
+    :rtype: List[int]
+    """
+    small_num = [var for var in nums if var<= target/2]
+    big_num = [var for var in nums if var>target/2 and var <target]
+    print(small_num,big_num)
+    for small in small_num:
+        for big in big_num:
+            if small+big == target:
+                return [nums.index(small),nums.index(big)]
+    return None
+
+result =twoSum([3,2,4],6)
+print(result)

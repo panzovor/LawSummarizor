@@ -201,9 +201,6 @@ def locate(content):
 
     sorted_standard = sorted(standard)
     sorted_answer = sorted(answer)
-    # print(sorted_standard)
-    # print(sorted_answer)
-    # print(sorted_standard.__len__(),sorted_answer.__len__())
     try:
         both,precison,recall = calculate(sorted_standard,sorted_answer)
     except:
