@@ -1,179 +1,139 @@
-# __author__ = 'E440'
-# import re
-# # ### encode = 'UTF-8'
-# #
-# # dict1 = {"c":3,"b":5,"a":1,"b":2}
-# # dict2 = {"c":3,"b":5}
-# #
-# # dict3 = dict(sorted(dict1.items(), key = lambda d: d[0],reverse = True))
-# # print(dict3)
-# # print(type(dict3))
-# #
-# # import jieba.posseg as pg
-# #
-# # string ='我爱北京天安门'
-# # word= list(pg.cut(string))
-# # print(type(word))
-# # print(word.__len__())
-# # for wor, pog in word:
-# #     print(wor,pog)
-#
-# strings = ['a','b','c','']
-# strings.remove('')
-# print(strings)
-#
-#
-# example = {'a':{'dd':10,"cc":1222},'b':{'aa':123,'cd':32}}
-# example_ = example.copy()
-# for name,value in example.items():
-#     if name == 'a':
-#         example[name] = []
-# print(example)
-# print(example_)
-#
-#
-# import re
-# string = "我爱\"北京\"天安门"
-# brand_regex = "((\").*?\")"
-# result = re.findall(brand_regex,string)
-# print(result.__len__())
-#
-# example_ = {"d":1,"c" :3,"a":2}
-# example_ = sorted(example_.items(),key = lambda  d:d[1],reverse = True)
-# print(example_)
-#
-#
-# example_ = [[1,2],[2,1]]
-#
-# string = "####"
-# string = string.replace("#+","")
-# print(string)
-# import re
-# string = re.sub("#+","#",string)
-# print(string)
-#
-#
-# import numpy as np
-#
-# print(np.zeros(6))
-#
-#
-# import jieba
-# def preprocess_data(sentence):
-#     time_regex = "(.{1,4}年.{1,2}月.{1,2}日)|(.{1,2}月.{1,2}日)"
-#     law_regex = "(《.*?》)"
-#     x_regex = "\*+|\".*?\""
-#     sentence_ = re.sub(time_regex, " 时间 ", sentence)
-#     sentence_ = re.sub(law_regex, " 法律 ", sentence_)
-#     sentence_ = re.sub(x_regex, "实体", sentence_)
-#     return sentence_
-#
-# def remove_space(words):
-#     return [word for word in words if word.strip()!= '']
-#
-# # string = "著作权归属	20**年*月*日，由***设计的\"****\"作品，系20**年*月*日，***委托***进行***设计时产生的美术作品。根据合同约定，\"****\"作品权属归***所有，即该\"****\"作品著作权属于***。	12"
-# # string = preprocess_data(string)
-# # print(string)
-# # wordss = remove_space(list(jieba.cut(string)))
-# # print(wordss)
-# # string1 = ''.join(wordss)
-# # print(string1)
-# # print(list(jieba.cut(string1)))
-# # rule_regex = preprocess_data(string)
-# # print(rule_regex)
-# # rule_regex = rule_regex.replace("实体",".*?")
-# # rule_regex = rule_regex.replace("时间",".*?")
-# # print(rule_regex)
-#
-# def transposition_sortedrow(a,reverse = True):
-#     a = list(map(list,zip(*a)))
-#     for index in range(a.__len__()):
-#         a[index] = sorted(a[index],reverse = reverse)
-#     return a
-#
-# a=[[1, 2, 3], [7, 8, 9], [4, 5, 6], [10, 11, 12]]
-# a = {1:1,2:23,3:4}
-# #
-# # a = sorted(a.items(), key = lambda d:d[1])
-# # for res in a:
-# #     print(resd)
-# # # print(a[0][0])
-# #
-# # print("===============")
-# #
-# # def pre_process(string):
-# #     regex = "：(?:.*?；)+"
-# #     seperate = re.findall(regex,string)
-# #     value = re.split(regex,string)
-# #     string_result = ""
-# #     if value.__len__()>1 and  seperate.__len__()==  value.__len__()-1:
-# #         for i in range(value.__len__()):
-# #             string_result+= value[i]
-# #             if i < value.__len__()-1:
-# #                 string_result+= seperate[i].replace("；","@")
-# #     else:
-# #         string_result=string
-# #     return string_result
-# #
-# # filepath="G:\Czb\国双课题\workspace\Summarizor\src1_result\csv\data_111_multi.txt.csv"
-# # with open(filepath, mode="r", encoding="utf-8") as file:
-# #     file_content = file.read()
-# #     real_content = file_content.split("\n", 1)[1]
-# #     print(real_content)
-# #
-#
-# # filepath ="D:\workspace\LawSummarizor\data\已标注文书-txt\paragraph_labeled\\3-宜宾五粮液股份有限公司与北京谭氏瑞丰商贸有限公司侵害商标权纠纷一案二审民事判决书.txt"
-# # regex= "<.*?商标知名度.*?>(.|\\n*?)</.*?商标知名度.*?>"
-# # with open(filepath,mode="r",encoding="utf-8") as file:
-# #     content = file.read()
-# # result = re.findall(regex,content)
-# # import src1.DataLoader as loader
-# # result = loader.labeled_text(content)
-# # for sen,label in result.items():
-# #     if isinstance(label,str):
-# #         print(label,sen)
-#
-#
-# string ="aaaaab"
-# print(string[:-1])
-#
-# brand_regex="院.{0, 4}认为"
-# import re
-# res = re.findall(brand_regex,string)
-# print(res)
+
+import matplotlib.pyplot as plt
+import math
+import random
+
+def get_matric():
+    leng = 13
+    matrix =[[0]*leng for var in range(leng)]
+
+    for i in range(leng):
+        for j in range(i,leng):
+            if i!=j:
+                if i+6 == j:
+                    continue
+                if i in target1 and j in target1:
+                    matrix[i][j] = random.randint(1,5)
+                    matrix[j][i] = random.randint(1,5)
+                elif i in target2 and j in target2:
+                    matrix[i][j] = random.randint(1,3)
+                    matrix[j][i] = random.randint(1,3)
+                elif i in target3 and j in target3:
+                    matrix[i][j] = random.randint(1,2)
+                    matrix[j][i] = random.randint(1,2)
+                else:
+                    matrix[i][j] = random.randint(0,4)
+                    matrix[j][i] = random.randint(0,4)
+
+    for res in matrix:
+        print(res)
+    return matrix
+
+def get_part_matrix(matirx,target_points):
+    print(target_points)
+    new_mat = [[0.0]*len(target_points) for var in range(len(target_points))]
+    result = []
+    for i in range(len(target_points)):
+        for j in range(len(target_points)):
+            if i!=j:
+                for k in range(len(matirx)):
+                    new_mat[i][j] += min(matirx[i][k],matirx[k][j])
+                    result.append([i,k])
+                    result.append([k,j])
+    print(result)
+    return new_mat
 
 
-# def filter(content):
-#     names = ['原告经营情况','企业名称变更','注册商标权利情况','证明商标使用管理规则','商标许可/转让情况','商标共有情况','商标知名度','驰名商标','申请驰名商标司法认定','证据保全公证','著作权登记','著作权归属','被告经营情况','行为人商标使用情况','与域名相关的事实','贴牌加工行为','合法来源','未实际使用','商标行政程序','商标权行政诉讼','商标权行政处罚','商标权犯罪']
-#     names.extend(['合理开支','产品利润','违法收入','原产地域名称情况'])
-#     regex = ""
-#     for name in names:
-#         regex+="</{0,1}"+name+">|"
-#     regex = regex[:-1]
-#     print(regex)
-#
-# filter("dd")
-#
-#
+def show_matric(matric,name = None,special=False,color_r = None,color_b = None,color_g = None):
+    thredshold = 0.0
+    radio = 200
+    x= []
+    y= []
+    angle = 360/len(matric)
+
+    for i in range(len(matric)):
+        x.append(radio*math.cos(math.radians(angle*(i+1))))
+        y.append(radio*math.sin(math.radians(angle*(i+1))))
+    used = []
+
+    for i in range(len(matric)):
+        for j in range(i,len(matric[i])):
+            if matric[i][j]>thredshold and i!=j:
+                linex = [x[i],x[j]]
+                liney = [y[i],y[j]]
+                if not special:
+                    xx = (x[i]+x[j])/2
+                    yy = (y[i]+y[j])/2
+                else:
+                    xx = (x[i]+x[j])/2-(20*i)
+                    yy = (y[i]+y[j])/2-(20*i)
+                if not special:
+                    plt.annotate(str(matric[i][j]),xy=[xx,yy],xytext = [xx,yy])
+                else:
+                    plt.annotate(str(matric[i][j])+"("+str(name[i])+","+str(name[j])+")",xy=[xx,yy],xytext = [xx,yy])
+
+                if color_r!=None and name == None and  i in color_r and j in color_r:
+                    plt.plot(linex,liney,"r-")
+                elif color_g!=None and name == None and i in color_g and j in color_g:
+                    plt.plot(linex,liney,"g-")
+
+                elif color_b!=None and name == None and  i in color_b and j in color_b:
+                    plt.plot(linex,liney,"b-")
+                else:
+                    plt.plot(linex,liney,"k-")
+
+                if color_r!=None and special:
+                    plt.plot(linex,liney,"r-")
+                elif color_g!=None and special:
+                    plt.plot(linex,liney,"g-")
+
+                elif color_b!=None and special:
+                    plt.plot(linex,liney,"b-")
+
+    if color_r!=None:
+        plt.plot([-radio],[-radio],"r-",label ="Noun")
+    if color_b!=None:
+        plt.plot([-radio],[-radio],"b-",label ="Numeral")
+    if color_g!=None:
+        plt.plot([radio],[-radio],"g-",label ="Verb")
+    if color_b!=None and color_g!=None and color_r!=None:
+        plt.plot([radio],[radio],"k-",label ="DifferentRoles")
+    plt.legend(loc="upper left")
+
+    for i in range(len(x)):
+        xx = (radio+20)*math.cos(math.radians(angle*(i+1)))
+        yy = (radio+20)*math.sin(math.radians(angle*(i+1)))
+        if name == None:
+            plt.annotate(str(i),xy=[x[i],y[i]],xytext = [xx,yy])
+        else:
+            plt.annotate(str(name[i]),xy=[x[i],y[i]],xytext = [xx,yy])
 
 
-for i in range(1,10):
-    print(i)
+    plt.scatter(x,y)
 
-def twoSum(nums, target):
-    """
-    :type nums: List[int]
-    :type target: int
-    :rtype: List[int]
-    """
-    small_num = [var for var in nums if var<= target/2]
-    big_num = [var for var in nums if var>target/2 and var <target]
-    print(small_num,big_num)
-    for small in small_num:
-        for big in big_num:
-            if small+big == target:
-                return [nums.index(small),nums.index(big)]
-    return None
+    plt.show()
 
-result =twoSum([3,2,4],6)
-print(result)
+
+
+target1 = [0,3,6,10,11]
+target2 = [1,4,7,9]
+target3 = [2,5,8,12]
+# show_matric(get_matric(),color_r=target1,color_g=target2,color_b=target3)
+# show_matric(get_part_matrix(get_matric(),target1),target1,special=True,color_r=target1)
+# show_matric(get_part_matrix(get_matric(),target2),target2,special=True,color_g=target2)
+# show_matric(get_part_matrix(get_matric(),target3),target3,special=True,color_b=target3)
+
+with open("D:\workspace\LawSummarizor\\ddd") as file:
+    content = file.readlines()[:13]
+    matrix = []
+    for lin in content:
+        # print(lin)
+        tmp = lin.strip()[1:-1].split(",")
+        # print(tmp)
+        matrix.append([int(var) for var in tmp])
+    dd = 0
+    for k in range(len(matrix)):
+        if matrix[0][k]!=0 and matrix[k][3]!=0:
+            print(0,"--",k,"--",3,matrix[0][k],matrix[k][3],min(matrix[0][k],matrix[k][3]))
+            dd+= min(matrix[0][k],matrix[k][3])
+    print(dd)

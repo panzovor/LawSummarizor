@@ -38,17 +38,19 @@ def read(filename):
 ###                            |      |                       |              |
 ###                   num feature  tfidf_feature   word_poss_feature     label_poss_feature
 ###
-def feature_generator(data):
+def feature_generator(data,num_tfidf = 4,word_poss_num =4):
     label_index = {}
     tfidf_corpus = []
     counter =0
     words_label_count ={}
     model = []
     ### num features
-    for label,label_data in data.items():
+    labels = sorted(data.keys())
+    for label in labels:
         label_index[label] = counter
         counter+=1
         words_each_label = []
+        label_data = data[label]
         for sentence in label_data:
             words_tag = posseg.cut(sentence)
             for word, tag in words_tag:
@@ -81,15 +83,36 @@ def feature_generator(data):
     for word,label_count in words_label_count.items():
         word_poss_feature[word] = []
         label_count = sum(words_label_count[word].values())
-        for label in label_index.keys():
+        label_ = sorted(label_index.keys(),reverse = True)
+        for label in label_:
             if label not in words_label_count[word].keys():
                 words_label_count[word][label] = 0
             word_poss_feature[word].append(words_label_count[word][label]/label_count)
 
     model.append(word_poss_feature)
     model.append(label_index)
+    title = "num_noun,num_verb,sepecial_num,"
+    label_sorted = list(sorted(label_index.items(), key=lambda d: d[1]))
+    for i in range(label_sorted.__len__()):
+        for j in range(num_tfidf):
+            title += str(label_index[label_sorted[i][0]]) + "-tfidf-" + str(j) + ","
+    for i in range(label_sorted.__len__()):
+        for j in range(word_poss_num):
+            title += str(label_index[label_sorted[i][0]]) + "-wp-" + str(j) + ","
+        title += str(label_index[label_sorted[i][0]]) + "-avg,"
+    for i in range(label_sorted.__len__()):
+        title += "label_poss_" + str(label_index[label_sorted[i][0]]) + ","
+    title += "class"
 
-    feature_title = "num_noun,num_verb,"
+    labels_ = sorted(label_index.keys())
+    title += "{"
+    for l in labels_:
+        title += "'"+str(label_index[l])+"',"
+    title = title[:-1]+"}"
+
+
+    model.append(title)
+    model.append([num_tfidf,word_poss_num])
     return model
 
 
@@ -229,7 +252,9 @@ def feature_generator_bak(data,tfidf_num = 4,word_poss_num =4):
 ###                            |      |                       |              |
 ###                   num feature  tfidf_feature   word_poss_feature     label_poss_feature
 ###
-def feature_single_sentence(model,sentence,real_label='0',tfidf_num=4,word_poss_num = 4):
+def feature_single_sentence(model,sentence,real_label='0'):
+    tfidf_num = model[5][0]
+    word_poss_num = model[5][1]
     words_tag = list(posseg.cut(sentence))
     num_noun, num_verb = 0, 0
     features = []
@@ -280,18 +305,23 @@ def feature_single_sentence(model,sentence,real_label='0',tfidf_num=4,word_poss_
     ### word_poss_feature
     word_poss_feature = model[2]
     # label_index = model[3]
+    labels = sorted(label_index.keys())
     if word_poss_num <= 0:
         tmp = []
         for word, tag in words_tag:
-            tmp.append(word_poss_feature[word])
+            if word in word_poss_feature.keys():
+                tmp.append(word_poss_feature[word])
         tmp = sorted(tmp, reverse=True)
         features.extend(tmp)
     else:
         word_poss_matrix = []
         for word, tag in words_tag:
             tmp = []
-            for label in label_index:
-                tmp.append(word_poss_feature[word][label_index[label]])
+            for label in labels:
+                if word in word_poss_feature.keys():
+                    tmp.append(word_poss_feature[word][label_index[label]])
+                else:
+                    tmp.append(0.5)
             word_poss_matrix.append(tmp)
         word_poss_matrix = transposition_sortedrow(word_poss_matrix)
         for line in word_poss_matrix:
@@ -307,7 +337,7 @@ def feature_single_sentence(model,sentence,real_label='0',tfidf_num=4,word_poss_
         features.extend(label_poss_feature)
 
     ### class
-        features.append(real_label)
+        features.append(model[3][str(real_label)])
     return features
 
 
@@ -353,6 +383,10 @@ def save_model(model,savepath):
     ### e.g.  {"label":index}
     label_index = model[3]
 
+    title = model[4]
+
+    parameter= model[5]
+
     seperater= "\n###seperate###\n"
     detail_sepeate = "\t"
     sepecial_replace_words = "tab_#"
@@ -371,10 +405,17 @@ def save_model(model,savepath):
         if word == detail_sepeate:
             tmp = sepecial_replace_words
         content += tmp+detail_sepeate+str(word_poss_feature[word])[1:-1]+"\n"
+
     content = content[:-1]
+
     content+= seperater
     for label,index in label_index.items():
         content+=label+detail_sepeate+str(index)+"\n"
+    content += seperater
+    content += title
+
+    content += seperater
+    content += str(parameter)[1:-1]
 
 
     with open(savepath,mode="w") as file:
@@ -390,7 +431,7 @@ def load_model(modelpath):
     sepecial_replace_words = "tab_#"
     if seperater in content:
         tmp  =content.split(seperater)
-        if tmp.__len__() == 4:
+        if tmp.__len__() == 6:
             label_poss_feature = [float(var) for var in tmp[0].split(",")]
             model.append(label_poss_feature)
 
@@ -423,39 +464,76 @@ def load_model(modelpath):
                         label_index[label_index_tmp[0]] = int(label_index_tmp[1])
             model.append(label_index)
 
+            model.append(tmp[4].strip())
+
+            tmp_parameter=  [int(var) for var in tmp[5].strip().split(",")]
+            model.append(tmp_parameter)
+
         return model
     else:
         print("model format damaged")
         return None
 
-def convert(filepath,savepath):
-    content = "@relation train_file\n"
-    with open(filepath,mode="r",encoding="utf-8") as file:
-        lines = file.readlines()
-        data_content =""
-        class_label =set()
-        for i in range(lines.__len__()):
-            if i  == 0:
-                tmp = lines[0].split(",")
-                for j in range(tmp.__len__()-1):
-                    tmp_string = tmp[j]
-                    content+= "@attribute "+tmp_string+" numeric\n"
+def conver2arfffile(content,arff_path):
+    title = content[0].split(",")
+    arff_title  ="@relation train_file\n"
+    for i in range(title.__len__()-1):
+        if "class" in title[i]:
+            arff_title += "@attribute "
+            break
+        arff_title+= "@attribute "+title[i]+" numeric\n"
+    arff_title += ",".join(title[i:]) + "\n"
+    arff_content = "@data \n"
+    for i in range(1,content.__len__()):
+        data = content[i]
+        arff_content+=str(data)[1:-1]+"\n"
+    arff_content = arff_title+arff_content
+    with open(arff_path,mode="w",encoding="utf-8") as file:
+        file.write(arff_content)
+    return arff_content
 
-            # else:
-            #     data_content+=str(lines[i])[:-1]+"\n"
-            label = lines[i].split(",")[-1].strip()
-            if label !="class":
-                class_label.add(label)
-        # for i in range(1,lines.__len__()):
-        #     print(i)
-        #     data_content+=lines[i]+'\n'
-        sorted(class_label)
-        # print(class_label)
-        content += "@attribute class {"
-        for label in class_label:
-            content+=label+","
-        content = content[:-1]
-        content+="}\n@data \n"
+
+
+
+def convert(filepath,savepath,title =""):
+    if title == "":
+        content = "@relation train_file\n"
+        with open(filepath,mode="r",encoding="utf-8") as file:
+            lines = file.readlines()
+            data_content =""
+            class_label =set()
+            for i in range(lines.__len__()):
+                if i  == 0:
+                    tmp = lines[0].split(",")
+                    for j in range(tmp.__len__()-1):
+                        tmp_string = tmp[j]
+                        content+= "@attribute "+tmp_string+" numeric\n"
+
+                # else:
+                #     data_content+=str(lines[i])[:-1]+"\n"
+                label = lines[i].split(",")[-1].strip()
+                if label !="class":
+                    class_label.add(label)
+            # for i in range(1,lines.__len__()):
+            #     print(i)
+            #     data_content+=lines[i]+'\n'
+            class_label = sorted(class_label)
+            content += "@attribute class {"
+            for label in class_label:
+                content+=label+","
+            content = content[:-1]
+            content+="}\n@data \n"
+    else:
+        title = title.split(",")
+        content = "@relation train_file\n"
+        for i in range(title.__len__() - 1):
+            if "class" in title[i]:
+                content += "@attribute "
+                break
+            content += "@attribute " + title[i] + " numeric\n"
+
+        content += ",".join(title[i:]) + "\n"
+        content += "@data \n"
         # content+=data_content
     with open(filepath, mode="r", encoding="utf-8") as file:
         file_content = file.read()
@@ -470,47 +548,36 @@ def demo(dataname):
     filename = Dir.projectDir+"/src1_result/new_extract_data/"+dataname
     data =read(filename)
     # print(sum([var.__len__() for var in data.values()]))
-    model = feature_generator(data)
+    num_tfidf = 4
+    word_poss_num = 4
+    model = feature_generator(data,num_tfidf,word_poss_num)
     savepath =  Dir.projectDir+"/src1_result/model/short_sentence_feature_model_"+dataname+".model"
 
     save_model(model,savepath)
     model1 = load_model(savepath)
     feature = []
-    tmp = model[-1]
-    title = "num_noun,num_verb,sepecial_num,"
-    num_tfidf = 4
-    word_poss_num = 4
-    label_sorted = list(sorted(tmp.items(), key=lambda d: d[1]))
-    for i in range(label_sorted.__len__()):
-        for j in range(num_tfidf):
-            title += label_sorted[i][0] + "-tfidf-" + str(j) + ","
-    for i in range(label_sorted.__len__()):
-        for j in range(word_poss_num):
-            title += label_sorted[i][0] + "-wp-" + str(j) + ","
-        title += label_sorted[i][0] + "-avg,"
-    for i in range(label_sorted.__len__()):
-        title+= "label_poss_"+str(label_sorted[i][0])+","
-    title += "class\n"
-    print(title)
+    title = model1[4]
 
-    feature.append(title)
+
+    feature.append(title+'\n')
     for label in data.keys():
         for sen in data[label]:
-            string = feature_single_sentence(model1,sen,label,num_tfidf,word_poss_num)
+            string = feature_single_sentence(model1,sen,real_label=label)
             feature.append(str(string)[1:-1]+"\n")
     print(feature.__len__())
     filepath = Dir.projectDir+"/src1_result/csv/"+dataname+".csv"
     with open(filepath,mode="w",encoding="utf-8") as file:
         file.writelines(feature)
         file.flush()
-    filepatha_rff = Dir.projectDir+"/src1_result/arff_new/"+dataname+".arff"
-    convert(filepath,filepatha_rff)
+    filepatha_rff = Dir.projectDir+"/src1_result/arff_new/"+dataname+"1.arff"
+    convert(filepath,filepatha_rff,title = title)
     print(dataname,"done")
 
-datanames = ['data_111_two','data_111_multi','data_299_two','data_299_multi','data_all_two','data_all_multi']
-data_multi = ['data_111_multi','data_299_multi','data_all_multi']
-data_two = ['data_111_two','data_299_two','data_all_two']
-# for name in data_two:
-#     demo(name)
-demo("data_labeled_two")
+if __name__ == "__main__":
+    # datanames = ['data_111_two','data_111_multi','data_299_two','data_299_multi','data_all_two','data_all_multi']
+    data_multi = ['data_111_multi','data_299_multi','data_all_multi']
+    # data_two = ['data_111_two','data_299_two','data_all_two']
+    # for name in data_multi:
+    #     demo(name)
+    demo("data_labeled_two")
 

@@ -1,6 +1,6 @@
 __author__ = 'E440'
 import Dir
-from nltk.internals import java, config_java
+from nltk.internals import java,config_java
 import subprocess
 from sys import stdin
 import re
@@ -8,31 +8,45 @@ import re
 ### weka cmd:
 ### java weka.classifiers.trees.J48 -p 9 -l directory-path\bank.model -T directory-path \bank-new.arff
 weka_class_path = Dir.projectDir+"/resources/weka3-6-6.jar"
-class WekaClassifier():
-    def __init__(self):
-        config_java()
-    def weka_classify(self,arff_file,model_file):
-        class_index=1
-        with open(arff_file,mode="r",encoding="utf-8") as file:
-            lines = file.readlines()
-            for i in range(lines.__len__()):
-                if "@attribute class" in lines[i]:
-                    class_index = i
-                    break
-        cmd =["weka.classifiers.trees.RandomForest","-p",str(class_index),"-l",str(model_file),"-T",str(arff_file)]
-        (stdout, stderr)  = java(cmd, classpath=weka_class_path,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        result= stdout.decode(stdin.encoding)
-        result = result[result.index("prediction ()")+"prediction ()".__len__():].strip()
-        tmp = result.split("\n")
-        final_result =[re.split(" +",t.strip()) for t in tmp]
-        # for res in final_result:
-        #     print(res)
-        return  final_result
+config_java()
+
+
+### input
+def weka_classify(arff_file,model_file):
+    class_index=1
+    if model_file =="":
+        return None
+    with open(arff_file,mode="r",encoding="utf-8") as file:
+        lines = file.readlines()
+        for i in range(lines.__len__()):
+            if "@attribute class" in lines[i]:
+                class_index = i
+                break
+
+    cmd =["weka.classifiers.trees.RandomForest","-p",str(class_index),"-l",str(model_file),"-T",str(arff_file)]
+    (stdout, stderr)  = java(cmd, classpath=weka_class_path,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    err_msg = stderr.decode("GBK")
+    if err_msg !="":
+        raise OSError('Java command failed : ' + str(err_msg))
+    result= stdout.decode(stdin.encoding)
+    if "prediction ()" not in result:
+        return None
+    result = result[result.index("prediction ()")+"prediction ()".__len__():].strip()
+    tmp = result.split("\n")
+    final_result ={}
+    for t in tmp:
+        result_tmp = re.split(" +", t.strip())
+        if result_tmp[0] not in final_result.keys():
+            predict = result_tmp[2].split(":")[1]
+            final_result[result_tmp[0]]= [predict,float(result_tmp[-1])]
+    return  final_result
+
+def demo():
+    model_path = Dir.projectDir+"/src1_result/arff_result/model/data111_randomforest.model"
+    arff_path = Dir.projectDir+"/src1_result/arff_new/data_111_two.arff"
+    result= weka_classify(arff_file=arff_path,model_file=model_path)
+    print(result)
+    return result
 
 if __name__ == "__main__":
-    weka = WekaClassifier()
-    arff_file = Dir.projectDir+"/src1_result/arff_new/data_111_two.arff"
-    model_file = Dir.projectDir+"/src1_result/arff_result/model/data111_randomforest.model"
-    weka.weka_classify(arff_file,model_file)
-
-
+    demo()

@@ -2,7 +2,7 @@ import src1.DataLoader as dataLoader
 import Dir
 import re
 
-def filter(content):
+def remove(content):
     names = ['原告经营情况','企业名称变更','注册商标权利情况','证明商标使用管理规则','商标许可/转让情况','商标共有情况','商标知名度','驰名商标','申请驰名商标司法认定','证据保全公证','著作权登记','著作权归属','被告经营情况','行为人商标使用情况','与域名相关的事实','贴牌加工行为','合法来源','未实际使用','商标行政程序','商标权行政诉讼','商标权行政处罚','商标权犯罪']
     names.extend(['合理开支','产品利润','违法收入','原产地域名称情况'])
     regex = ""
@@ -12,9 +12,12 @@ def filter(content):
     content = re.sub(regex,"",content)
     return content
 
+def nothing(content):
+    return content
 
 
-def transfer(dir,two_class = True,label_file = Dir.resourceDir+"标签-paragraph.csv"):
+
+def transfer(dir,two_class = True,label_file = Dir.resourceDir+"标签-paragraph.csv",filter = nothing):
     data  = dataLoader.get_all_data(dir)[2]
     result = []
     seperate = "\t"
@@ -142,14 +145,48 @@ def extract_label_data(dir,save_dir):
             file.writelines(result[label])
 
 
-import Dir
-# 典型案例111篇
-# 基础案例299篇-已标注
-dir_classic = Dir.resourceDir+"已标注文书-txt/paragraph_labeled/"
-content = transfer(dir_classic,two_class=False)
-savepath =  Dir.projectDir+"/src1_result/new_extract_data/data_labeled_two"
-print(content.__len__())
-save(content,savepath)
+def extract_setence(content,two_class = True ,paragraph = False):
+    label_file = Dir.resourceDir + "标签-sheet1.csv"
+    filter = nothing
+    if paragraph:
+        label_file = Dir.resourceDir + "标签-paragraph.csv"
+        filter = remove
+
+    seperate = "\t"
+    label_regex = dataLoader.get_label_regex(dataLoader.read_label(label_file))
+    labeled_content = dataLoader.labeled_text(content,label_regex=label_regex, filter=filter)
+    result =[]
+    if two_class:
+        tmp = []
+        for sen in labeled_content.keys():
+            sentence = sen.strip()
+            if sentence == "":
+                continue
+            if labeled_content[sen].__len__() > 0:
+                result.append(sentence + seperate + "1" + '\n')
+                tmp.append(sentence + seperate + "1" + '\n')
+            else:
+                result.append(sentence + seperate + "0" + '\n')
+                tmp.append(sentence + seperate + "0" + '\n')
+    else:
+        for sen in labeled_content.keys():
+            sentence = sen.strip()
+            if sentence == "":
+                continue
+            if labeled_content[sen].__len__() > 0:
+                result.append(sentence + seperate + labeled_content[sen] + '\n')
+            else:
+                result.append(sentence + seperate + "null" + "\n")
+    return result
+
+# import Dir
+# # 典型案例111篇
+# # 基础案例299篇-已标注
+# dir_classic = Dir.resourceDir+"已标注文书-txt/paragraph_labeled/"
+# content = transfer(dir_classic,two_class=False)
+# savepath =  Dir.projectDir+"/src1_result/new_extract_data/data_labeled_two"
+# print(content.__len__())
+# save(content,savepath)
 
 # save_dir =  Dir.projectDir+"/src1_result/label_data/all"
 # extract_label_data(dir_classic,save_dir)
